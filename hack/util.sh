@@ -391,7 +391,7 @@ function util::deploy_webhook_configuration() {
   local ca_file=$1
   local conf=$2
 
-  local ca_string=$(sudo cat ${ca_file} | base64 | tr "\n" " "|sed s/[[:space:]]//g)
+  local ca_string=$(cat ${ca_file} | base64 | tr "\n" " "|sed s/[[:space:]]//g)
 
   local temp_path=$(mktemp -d)
   cp -rf "${conf}" "${temp_path}/temp.yaml"
