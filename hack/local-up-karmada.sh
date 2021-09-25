@@ -40,7 +40,8 @@ fi
 # Make sure go exists
 util::cmd_must_exist "go"
 # install kind and kubectl
-util::install_tools sigs.k8s.io/kind v0.11.1
+# TODO
+# util::install_tools sigs.k8s.io/kind v0.11.1
 # get arch name and os name in bootstrap
 BS_ARCH=$(go env GOARCH)
 BS_OS=$(go env GOOS)
@@ -48,7 +49,8 @@ BS_OS=$(go env GOOS)
 util::install_environment_check "${BS_ARCH}" "${BS_OS}"
 # we choose v1.18.0, because in kubectl after versions 1.18 exist a bug which will give wrong output when using jsonpath.
 # bug details: https://github.com/kubernetes/kubernetes/pull/98057
-util::install_kubectl "v1.18.0" "${BS_ARCH}" "${BS_OS}"
+# TODO
+# util::install_kubectl "v1.18.0" "${BS_ARCH}" "${BS_OS}"
 
 #step1. create host cluster and member clusters in parallel
 # host IP address: script parameter ahead of macOS IP
