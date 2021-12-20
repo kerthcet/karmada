@@ -193,7 +193,7 @@ apiServer:
   imagePullSecrets: []
   image:
     ## @param apiServer.image.repository image of the apiserver
-    repository: k8s.gcr.io/kube-apiserver
+    repository: k8s-gcr.m.daocloud.io/kube-apiserver
     ## @param apiServer.image.pullPolicy pull policy of image
     pullPolicy: IfNotPresent
     ## @param apiServer.image.tag overrides the image tag whose default is the latest
@@ -225,7 +225,7 @@ apiServer:
   ## "ClusterIP" means using ClusterIP
   ## "NodePort" means using NodePort
   serviceType: ClusterIP
-  ## @param apiServer.nodePort node port for apiserver service, 
+  ## @param apiServer.nodePort node port for apiserver service,
   ## will take effect when 'apiServer.serviceType' is 'NodePort'.
   ## If no port is specified, the nodePort will be automatically assigned.
   nodePort: 0
@@ -272,7 +272,7 @@ kubeControllerManager:
 ## etcd config
 etcd:
   ## @param etcd.mode "external" and "internal" are provided
-  ## "external" means use external ectd 
+  ## "external" means use external ectd
   ## "internal" means install a etcd in the cluster
   mode: "internal"
   external:
@@ -368,7 +368,7 @@ agent:
     pullPolicy: IfNotPresent
     ## @param agent.image.tag overrides the image tag whose default is the latest
     tag: latest
-  ## @param agent.resources 
+  ## @param agent.resources
   resources: { }
     # If you do want to specify resources, uncomment the following
     # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
