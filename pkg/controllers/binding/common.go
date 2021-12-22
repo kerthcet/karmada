@@ -118,40 +118,47 @@ func ensureWork(c client.Client, workload *unstructured.Unstructured, overrideMa
 			}
 		}
 
-		cops, ops, err := overrideManager.ApplyOverridePolicies(clonedWorkload, targetCluster.Name)
+		workMeta, err := tesss(c, clonedWorkload, overrideManager, binding, scope, targetCluster)
 		if err != nil {
-			klog.Errorf("Failed to apply overrides for %s/%s/%s, err is: %v", clonedWorkload.GetKind(), clonedWorkload.GetNamespace(), clonedWorkload.GetName(), err)
 			return err
 		}
 
-		workNamespace, err := names.GenerateExecutionSpaceName(targetCluster.Name)
-		if err != nil {
-			klog.Errorf("Failed to ensure Work for cluster: %s. Error: %v.", targetCluster.Name, err)
-			return err
-		}
-
-		workLabel := mergeLabel(clonedWorkload, workNamespace, binding, scope)
-
-		annotations := mergeAnnotations(clonedWorkload, binding, scope)
-		annotations, err = recordAppliedOverrides(cops, ops, annotations)
-		if err != nil {
-			klog.Errorf("failed to record appliedOverrides, Error: %v", err)
-			return err
-		}
-
-		workMeta := metav1.ObjectMeta{
-			Name:        names.GenerateWorkName(clonedWorkload.GetKind(), clonedWorkload.GetName(), clonedWorkload.GetNamespace()),
-			Namespace:   workNamespace,
-			Finalizers:  []string{util.ExecutionControllerFinalizer},
-			Labels:      workLabel,
-			Annotations: annotations,
-		}
-
-		if err = helper.CreateOrUpdateWork(c, workMeta, clonedWorkload); err != nil {
+		if err = helper.CreateOrUpdateWork(c, *workMeta, clonedWorkload); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func tesss(c client.Client, clonedWorkload *unstructured.Unstructured, overrideManager overridemanager.OverrideManager, binding metav1.Object, scope apiextensionsv1.ResourceScope, targetCluster workv1alpha2.TargetCluster) (*metav1.ObjectMeta, error) {
+	cops, ops, err := overrideManager.ApplyOverridePolicies(clonedWorkload, targetCluster.Name)
+	if err != nil {
+		klog.Errorf("Failed to apply overrides for %s/%s/%s, err is: %v", clonedWorkload.GetKind(), clonedWorkload.GetNamespace(), clonedWorkload.GetName(), err)
+		return nil, err
+	}
+
+	workNamespace, err := names.GenerateExecutionSpaceName(targetCluster.Name)
+	if err != nil {
+		klog.Errorf("Failed to ensure Work for cluster: %s. Error: %v.", targetCluster.Name, err)
+		return nil, err
+	}
+
+	workLabel := mergeLabel(clonedWorkload, workNamespace, binding, scope)
+
+	annotations := mergeAnnotations(clonedWorkload, binding, scope)
+	annotations, err = recordAppliedOverrides(cops, ops, annotations)
+	if err != nil {
+		klog.Errorf("failed to record appliedOverrides, Error: %v", err)
+		return nil, err
+	}
+
+	return &metav1.ObjectMeta{
+		Name:        names.GenerateWorkName(clonedWorkload.GetKind(), clonedWorkload.GetName(), clonedWorkload.GetNamespace()),
+		Namespace:   workNamespace,
+		Finalizers:  []string{util.ExecutionControllerFinalizer},
+		Labels:      workLabel,
+		Annotations: annotations,
+	}, nil
 }
 
 func getRSPAndReplicaInfos(c client.Client, workload *unstructured.Unstructured, targetClusters []workv1alpha2.TargetCluster) (bool, *policyv1alpha1.ReplicaSchedulingPolicy, map[string]int64, error) {
