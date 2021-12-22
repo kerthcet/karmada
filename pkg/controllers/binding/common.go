@@ -90,19 +90,6 @@ func ensureWork(c client.Client, workload *unstructured.Unstructured, overrideMa
 	for i := range targetClusters {
 		targetCluster := targetClusters[i]
 		clonedWorkload := workload.DeepCopy()
-		cops, ops, err := overrideManager.ApplyOverridePolicies(clonedWorkload, targetCluster.Name)
-		if err != nil {
-			klog.Errorf("Failed to apply overrides for %s/%s/%s, err is: %v", clonedWorkload.GetKind(), clonedWorkload.GetNamespace(), clonedWorkload.GetName(), err)
-			return err
-		}
-
-		workNamespace, err := names.GenerateExecutionSpaceName(targetCluster.Name)
-		if err != nil {
-			klog.Errorf("Failed to ensure Work for cluster: %s. Error: %v.", targetCluster.Name, err)
-			return err
-		}
-
-		workLabel := mergeLabel(clonedWorkload, workNamespace, binding, scope)
 
 		if clonedWorkload.GetKind() == util.DeploymentKind && (referenceRSP != nil || hasScheduledReplica) {
 			err = applyReplicaSchedulingPolicy(clonedWorkload, desireReplicaInfos[targetCluster.Name], util.ReplicasField)
@@ -130,6 +117,20 @@ func ensureWork(c client.Client, workload *unstructured.Unstructured, overrideMa
 				}
 			}
 		}
+
+		cops, ops, err := overrideManager.ApplyOverridePolicies(clonedWorkload, targetCluster.Name)
+		if err != nil {
+			klog.Errorf("Failed to apply overrides for %s/%s/%s, err is: %v", clonedWorkload.GetKind(), clonedWorkload.GetNamespace(), clonedWorkload.GetName(), err)
+			return err
+		}
+
+		workNamespace, err := names.GenerateExecutionSpaceName(targetCluster.Name)
+		if err != nil {
+			klog.Errorf("Failed to ensure Work for cluster: %s. Error: %v.", targetCluster.Name, err)
+			return err
+		}
+
+		workLabel := mergeLabel(clonedWorkload, workNamespace, binding, scope)
 
 		annotations := mergeAnnotations(clonedWorkload, binding, scope)
 		annotations, err = recordAppliedOverrides(cops, ops, annotations)
